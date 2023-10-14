@@ -1,5 +1,12 @@
 from fastapi import FastAPI
-import lammps
+from unittest.mock import MagicMock
+
+import os
+
+if os.getenv("LAMMPS_INSTALLED") != "0":
+    import lammps
+else:
+    import api.test.lammps_mock as lammps
 
 app = FastAPI()
 
