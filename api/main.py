@@ -4,11 +4,6 @@ import lammps
 app = FastAPI()
 
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-
-@app.get("/lammps")
-async def lammps_root():
+@app.get("/healthcheck")
+async def healthcheck():
     return {"lammps_version": f"{lammps.__version__}"}
