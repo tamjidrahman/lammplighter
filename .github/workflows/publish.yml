@@ -14,11 +14,9 @@ jobs:
     
 
     steps:
-      - run: ls
-      - run: docker build --tag lammplighter .
-
       - name: Check out code
         uses: actions/checkout@v3
+      - run: docker build --tag lammplighter .
       - name: Push to ECR
         id: ecr
         uses: jwalton/gh-ecr-push@v1
