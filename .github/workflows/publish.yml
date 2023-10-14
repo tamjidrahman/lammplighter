@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: ECR Publish
 
 on:
   push:
@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check out code
+        uses: actions/checkout@v3
       - run: docker build --tag lammplighter .
       - name: Push to ECR
         id: ecr
@@ -21,4 +23,5 @@ jobs:
           access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           region: us-east-2
+          local-image: lammplighter
           image: lammplighter:${{ github.sha }}, lammplighter:latest
