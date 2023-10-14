@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "lammplighter"
+version = "0.1.0"
+description = "API on top of lammp"
+authors = ["Tamjid Rahman <tamjidarrahman@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.103.2"
+uvicorn = "^0.23.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
