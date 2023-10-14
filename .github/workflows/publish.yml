@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: ECR Publish
 
 on:
   push:
@@ -14,6 +14,7 @@ jobs:
 
     steps:
       - run: docker build --tag lammplighter .
+      - run: ls
       - name: Push to ECR
         id: ecr
         uses: jwalton/gh-ecr-push@v1
