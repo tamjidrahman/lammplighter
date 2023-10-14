@@ -14,19 +14,8 @@ COPY pyproject.toml ./
 
 RUN poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIR
 
-# The runtime image, used to just run the code provided its virtual environment
-FROM python:3.11-slim-buster as runtime
-
-# Install dependencies for lammp
-RUN apt-get update && apt-get -y install cmake protobuf-compiler && apt-get install -y wget && apt-get install -y build-essential
-RUN wget "https://download.lammps.org/tars/lammps-stable.tar.gz"
-RUN tar -xvzf lammps-stable.tar.gz
-RUN mkdir lammps-2Aug2023/build
-WORKDIR lammps-2Aug2023/build
-
-# cmake lammp
-RUN cmake ../cmake -D BUILD_SHARED_LIBS=yes
-RUN cmake --build .
+# load base lammp build from ECR lammp image
+FROM 217089594100.dkr.ecr.us-east-2.amazonaws.com/lammp:latest
 
 # load python builder venv
 ENV VIRTUAL_ENV=/app/.venv \
