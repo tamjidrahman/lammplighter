@@ -11,7 +11,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    
 
     steps:
       - name: Check out code
@@ -24,4 +23,5 @@ jobs:
           access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           region: us-east-2
+          local-image: lammplighter
           image: lammplighter:${{ github.sha }}, lammplighter:latest
