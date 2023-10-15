@@ -1,6 +1,8 @@
 # Update base lammp image only when Dockerfile.lammp is changed
+name: LAMMPS publish
+
 on:
-  pull_request:
+  push:
     branches: [ "main" ]
     paths:
       - Dockerfile.lammp
