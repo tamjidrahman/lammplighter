@@ -14,3 +14,8 @@ app = FastAPI()
 @app.get("/healthcheck")
 async def healthcheck():
     return {"lammps_version": f"{lammps.__version__}"}
+
+
+@app.get("/mustard")
+async def mustard():
+    return {"You shall never know"}
