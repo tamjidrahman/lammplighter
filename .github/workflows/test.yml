@@ -47,4 +47,4 @@ jobs:
       - name: Run tests
         run: |
           source .venv/bin/activate
-          LAMMPS_INSTALLED=0 pytest tests.py --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
+          LAMMPS_INSTALLED=0 pytest --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
