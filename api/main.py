@@ -35,12 +35,21 @@ async def main():
 
 @app.get("/resources/inputs/")
 async def get_inputs():
-    return {"scripts": "calc_fcc.in", "potentials": "Al99.eam.alloy"}
+    files = s3_client.list_objects_v2(
+        Bucket="lammplighter", Prefix="resources/inputs/"
+    ).get("Contents")
+
+    filenames = None
+    if files:
+        filenames = [file.get("Key").split("/")[-1] for file in files]
+    return {"resources/inputs/": filenames}
 
 
 @app.post("/resources/inputs/")
 def post_input(files: List[UploadFile]):
-    file = files[0]
-    filename = file.filename
-    s3_client.upload_fileobj(file.file, "lammplighter", f"inputs/{filename}")
-    return {f"Uploaded: {filename}"}
+    filenames = [file.filename for file in files]
+    for file in files:
+        s3_client.upload_fileobj(
+            file.file, "lammplighter", f"resources/inputs/{file.filename}"
+        )
+    return {f"Uploaded: {filenames}"}
