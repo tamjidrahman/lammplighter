@@ -12,13 +12,6 @@ env:
   ECS_TASK_DEFINITION: ecs_task.json
   CONTAINER_NAME: lamplighter-api
 
-name: PyTest
-
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-
 jobs:
   test:
     runs-on: ubuntu-latest
