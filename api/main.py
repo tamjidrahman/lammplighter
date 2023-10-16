@@ -4,7 +4,7 @@ from multiprocessing import Process
 from typing import List
 
 import boto3
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, Query, UploadFile
 from fastapi.responses import HTMLResponse
 
 s3_client = boto3.client("s3")
@@ -72,7 +72,7 @@ def post_input(files: List[UploadFile]):
     return {f"Uploaded: {filenames}"}
 
 
-def lamp_run(input_filename, run_id):
+def lamp_run(input_filename: str, run_id: str, dump_commands: List[str]):
     lmp = lammps.lammps()
 
     output_dir = f"outputs/{run_id}"
@@ -80,7 +80,8 @@ def lamp_run(input_filename, run_id):
 
     log_filename = f"{output_dir}/{run_id}.log"
     lmp.command(f"log {log_filename}")
-    lmp.command(f"dump 1 all atom 100 {output_dir}/{run_id}.atom.dump")
+    for i, cmd in enumerate(dump_commands):
+        lmp.command(f"dump {i} {cmd} {output_dir}/{run_id}.1.dump")
 
     lmp.file(f"api/resources/inputs/{input_filename}")
 
@@ -92,8 +93,8 @@ def lamp_run(input_filename, run_id):
 
 
 @app.post("/execute")
-async def run(input_filename: str):
-    os.makedirs("api/resources/inputs")
+async def run(input_filename: str, dump_commands: List[str] = Query(None)):
+    os.makedirs("api/resources/inputs", exist_ok=True)
     s3_client.download_file(
         "lammplighter",
         f"resources/inputs/{input_filename}",
@@ -102,7 +103,7 @@ async def run(input_filename: str):
 
     timestamp = datetime.now().strftime("%Y%m%d%H%M")
     run_id = f"{input_filename}_{timestamp}"
-    p = Process(target=lamp_run, args=(input_filename, run_id))
+    p = Process(target=lamp_run, args=(input_filename, run_id, dump_commands))
     p.start()
 
     return {f"Executing {run_id}"}
