@@ -1,14 +1,14 @@
-import io
+import os
+from datetime import datetime
 from multiprocessing import Process
 from typing import List
-from fastapi import FastAPI, File, UploadFile, HTTPException
+
 import boto3
-from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
-from datetime import datetime
+from fastapi import FastAPI, UploadFile
+from fastapi.responses import HTMLResponse
 
 s3_client = boto3.client("s3")
 
-import os
 
 if os.getenv("LAMMPS_INSTALLED") != "0":
     import lammps
