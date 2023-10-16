@@ -76,11 +76,11 @@ def lamp_run(input_filename, run_id):
     lmp = lammps.lammps()
 
     output_dir = f"outputs/{run_id}"
-    os.mkdir(output_dir)
+    os.makedirs(output_dir, exist_ok=True)
 
     log_filename = f"{output_dir}/{run_id}.log"
     lmp.command(f"log {log_filename}")
-    lmp.command(f"dump 1 all atom 10 {output_dir}/{run_id}.atom.dump")
+    lmp.command(f"dump 1 all atom 100 {output_dir}/{run_id}.atom.dump")
 
     lmp.file(f"api/resources/inputs/{input_filename}")
 
@@ -93,6 +93,7 @@ def lamp_run(input_filename, run_id):
 
 @app.post("/execute")
 async def run(input_filename: str):
+    os.makedirs("api/resources/inputs")
     s3_client.download_file(
         "lammplighter",
         f"resources/inputs/{input_filename}",
