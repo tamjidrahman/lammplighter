@@ -1,6 +1,9 @@
 # Installation
 
-This repo uses poetry, but the lammps build is a custom build (see Dockerfile)
+Recommended development within a docker container. Local installations will require a local lammps installation.
+
+- Install poetry.
+- Install lammps, with python package.
 
 # Getting started
 
