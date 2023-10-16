@@ -81,7 +81,7 @@ def lamp_run(input_filename: str, run_id: str, dump_commands: List[str]):
     log_filename = f"{output_dir}/{run_id}.log"
     lmp.command(f"log {log_filename}")
     for i, cmd in enumerate(dump_commands):
-        lmp.command(f"dump {i} {cmd} {output_dir}/{run_id}.1.dump")
+        lmp.command(f"dump {i} {cmd} {output_dir}/{run_id}.{i}.dump")
 
     lmp.file(f"api/resources/inputs/{input_filename}")
 
