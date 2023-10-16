@@ -1,8 +1,10 @@
 import io
+from multiprocessing import Process
 from typing import List
 from fastapi import FastAPI, File, UploadFile, HTTPException
 import boto3
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
+from datetime import datetime
 
 s3_client = boto3.client("s3")
 
@@ -47,15 +49,17 @@ async def get_inputs():
 
 
 @app.get("/outputs")
-async def get_outputs(filename: str):
-    with open(f"outputs_{filename}", "w+b") as f:
-        s3_client.download_fileobj("lammplighter", f"outputs/{filename}", f)
-
-    return FileResponse(
-        f"outputs_{filename}",
-        media_type="application/octet-stream",
-        filename=f"outputs_{filename}",
-    )
+async def get_outputs(run_id: str, file_type: str = "log"):
+    return {
+        s3_client.generate_presigned_url(
+            "get_object",
+            Params={
+                "Bucket": "lammplighter",
+                "Key": f"outputs/{run_id}/{run_id}.{file_type}",
+            },
+            ExpiresIn=60,
+        )
+    }
 
 
 @app.post("/resources/inputs/")
@@ -68,17 +72,36 @@ def post_input(files: List[UploadFile]):
     return {f"Uploaded: {filenames}"}
 
 
-@app.post("/execute")
-def run(input_filename: str):
+def lamp_run(input_filename, run_id):
     lmp = lammps.lammps()
 
+    output_dir = f"outputs/{run_id}"
+    os.mkdir(output_dir)
+
+    log_filename = f"{output_dir}/{run_id}.log"
+    lmp.command(f"log {log_filename}")
+    lmp.command(f"dump 1 all atom 10 {output_dir}/{run_id}.atom.dump")
+
+    lmp.file(f"api/resources/inputs/{input_filename}")
+
+    for filename in os.listdir(output_dir):
+        with open(f"{output_dir}/{filename}", "rb") as log_file:
+            s3_client.upload_fileobj(
+                log_file, "lammplighter", f"{output_dir}/{filename}"
+            )
+
+
+@app.post("/execute")
+async def run(input_filename: str):
     s3_client.download_file(
         "lammplighter",
         f"resources/inputs/{input_filename}",
         f"api/resources/inputs/{input_filename}",
     )
 
-    lmp.file(f"api/resources/inputs/{input_filename}")
-    with open("log.lammps", "rb") as log_file:
-        s3_client.upload_fileobj(log_file, "lammplighter", f"outputs/{input_filename}")
-    return {f"Executed {input_filename}"}
+    timestamp = datetime.now().strftime("%Y%m%d%H%M")
+    run_id = f"{input_filename}_{timestamp}"
+    p = Process(target=lamp_run, args=(input_filename, run_id))
+    p.start()
+
+    return {f"Executing {run_id}"}
