@@ -19,11 +19,11 @@ QUEUE_URL = (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Load the ML model
+    # Run asynchronous lammp process
     queue_process = Process(target=loop)
     queue_process.start()
     yield
-    # Clean up the ML models and release the resources
+    # Close asynchronous lammp process
     queue_process.terminate()
 
 
