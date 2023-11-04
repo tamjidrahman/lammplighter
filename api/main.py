@@ -1,4 +1,5 @@
 import json
+from contextlib import asynccontextmanager
 from datetime import datetime
 from multiprocessing import Process
 from typing import List, Optional
@@ -15,10 +16,18 @@ QUEUE_URL = (
     "https://sqs.us-east-2.amazonaws.com/217089594100/lammplighterQueue"
 )
 
-queue_process = Process(target=loop)
-queue_process.start()
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load the ML model
+    queue_process = Process(target=loop)
+    queue_process.start()
+    yield
+    # Clean up the ML models and release the resources
+    queue_process.terminate()
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/healthcheck")
