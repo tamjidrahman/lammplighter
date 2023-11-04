@@ -16,8 +16,8 @@ QUEUE_URL = (
     "https://sqs.us-east-2.amazonaws.com/217089594100/lammplighterQueue"
 )
 
-sqs = boto3.client("sqs")
-s3_client = boto3.client("s3")
+sqs = boto3.client("sqs", region_name="us-east-2")
+s3_client = boto3.client("s3", region_name="us-east-2")
 
 
 if os.getenv("LAMMPS_INSTALLED") != "0":
