@@ -1,16 +1,10 @@
 import json
-import logging
 import os
 import time
 from datetime import datetime
 from typing import List, Optional
 
 import boto3
-
-logging.basicConfig(
-    filename="queue_log.log", encoding="utf-8", level=logging.DEBUG
-)
-
 
 QUEUE_URL = (
     "https://sqs.us-east-2.amazonaws.com/217089594100/lammplighterQueue"
@@ -74,8 +68,6 @@ def read_and_execute():
     while not message:
         time.sleep(1)
         message = receive_message()
-
-    logging.info(f"found file {message}")
 
     body = message["Body"]
 
