@@ -18,7 +18,7 @@ class Run(RunBase):
 
     status: str
     inputconfig_id: int
-    id: int
+    id: str
 
 
 class InputConfigBase(BaseModel):
@@ -33,5 +33,5 @@ class InputConfigCreate(InputConfigBase):
 class InputConfig(InputConfigBase):
     model_config = ConfigDict(from_attributes=True)
 
-    id: int
+    id: str
     runs: list[Run] = []

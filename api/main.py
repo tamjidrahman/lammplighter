@@ -1,4 +1,3 @@
-import json
 from contextlib import asynccontextmanager
 from multiprocessing import Process
 from typing import List, Optional
@@ -8,7 +7,7 @@ from fastapi import Depends, FastAPI, UploadFile
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 
-from api.database.crud import create_inputconfig, create_run, get_input_by_name
+from api.database.crud import create_inputconfig, get_input_by_name
 from api.database.database import SessionLocal
 from api.database.schemas import InputConfigCreate, RunCreate
 from api.squeue import lammps, loop
@@ -138,18 +137,9 @@ def post_input(files: List[UploadFile], db: Session = Depends(get_db)):
 
 @app.post("/execute")
 async def run(run: RunCreate, db: Session = Depends(get_db)):
-    db_run = create_run(db, run)
-
     sqs.send_message(
         QueueUrl=QUEUE_URL,
         DelaySeconds=10,
-        MessageAttributes={
-            "FileName": {
-                "DataType": "String",
-                "StringValue": f"{run.inputconfig_name}",
-            },
-            "RunID": {"DataType": "String", "StringValue": f"{db_run.id}"},
-        },
-        MessageBody=(json.dumps(db_run.commands)),
+        MessageBody=(run.model_dump_json()),
     )
-    return db_run.id
+    return "OK"

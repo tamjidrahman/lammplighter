@@ -1,9 +1,12 @@
-import json
 import os
 import time
 from typing import List, Optional
 
 import boto3
+
+from api.database.crud import create_run, update_run_status
+from api.database.database import SessionLocal
+from api.database.schemas import RunCreate
 
 QUEUE_URL = (
     "https://sqs.us-east-2.amazonaws.com/217089594100/lammplighterQueue"
@@ -11,6 +14,7 @@ QUEUE_URL = (
 
 sqs = boto3.client("sqs", region_name="us-east-2")
 s3_client = boto3.client("s3", region_name="us-east-2")
+db = SessionLocal()
 
 
 if os.getenv("LAMMPS_INSTALLED") != "0":
@@ -68,22 +72,19 @@ def read_and_execute():
         time.sleep(1)
         message = receive_message()
 
-    body = message["Body"]
-
-    input_filename = message["MessageAttributes"]["FileName"]["StringValue"]
-    run_id = message["MessageAttributes"]["RunID"]["StringValue"]
-    dump_commands = json.loads(body)
+    run: RunCreate = RunCreate.model_validate_json(message["Body"])
+    db_run = create_run(db, run)
 
     os.makedirs("api/resources/inputs", exist_ok=True)
     s3_client.download_file(
         "lammplighter",
-        f"resources/inputs/{input_filename}",
-        f"api/resources/inputs/{input_filename}",
+        f"resources/inputs/{run.inputconfig_name}",
+        f"api/resources/inputs/{run.inputconfig_name}",
     )
 
-    lamp_run(input_filename, run_id, dump_commands)
-
-    return {f"Executing {run_id}"}
+    update_run_status(db, db_run.id, "IN PROGRESS")
+    lamp_run(run.inputconfig_name, db_run.id, run.commands)
+    update_run_status(db, db_run.id, "COMPLETE")
 
 
 def loop():
