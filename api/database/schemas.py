@@ -35,3 +35,7 @@ class InputConfig(InputConfigBase):
 
     id: str
     runs: list[Run] = []
+
+
+class HealthCheckResponse(BaseModel):
+    lammps_version: int

@@ -5,18 +5,17 @@ from typing import List, Optional
 import boto3
 from fastapi import Depends, FastAPI, UploadFile
 from fastapi.responses import HTMLResponse
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from api.database.crud import create_inputconfig, get_input_by_name
 from api.database.database import SessionLocal
-from api.database.schemas import InputConfigCreate, RunCreate
+from api.database.schemas import HealthCheckResponse, InputConfigCreate, RunCreate
 from api.squeue import lammps, loop
 
 s3_client = boto3.client("s3", region_name="us-east-2")
 sqs = boto3.client("sqs", region_name="us-east-2")
-QUEUE_URL = (
-    "https://sqs.us-east-2.amazonaws.com/217089594100/lammplighterQueue"
-)
+QUEUE_URL = "https://sqs.us-east-2.amazonaws.com/217089594100/lammplighterQueue"
 
 
 @asynccontextmanager
@@ -42,8 +41,9 @@ def get_db():
 
 
 @app.get("/healthcheck")
-async def healthcheck():
-    return {"lammps_version": f"{lammps.__version__}"}
+async def healthcheck(db: Session = Depends(get_db)):
+    db.execute(text("SELECT 1")).first()
+    return HealthCheckResponse(lammps_version=lammps.__version__)
 
 
 @app.get("/")
@@ -72,9 +72,7 @@ async def main():
     </form>
     </body>
     """
-    return HTMLResponse(
-        content="<h1>Hi Laura <3 </h1>" + input_configs_html + content
-    )
+    return HTMLResponse(content="<h1>Hi Laura <3 </h1>" + input_configs_html + content)
 
 
 @app.get("/resources/inputs/")
@@ -95,9 +93,7 @@ async def get_outputs(run_id: str, file_type: Optional[str] = None):
         Bucket="lammplighter", Prefix=f"outputs/{run_id}/"
     ).get("Contents")
 
-    filenames = (
-        [file.get("Key").split("/")[-1] for file in files] if files else []
-    )
+    filenames = [file.get("Key").split("/")[-1] for file in files] if files else []
 
     if not file_type:
         return {"outputs/": filenames}
