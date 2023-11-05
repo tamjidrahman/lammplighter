@@ -1,3 +1,6 @@
+[tool.pytest.ini_options]
+env_files = ".test.env"
+
 [tool.poetry]
 name = "lammplighter"
 version = "0.1.0"
