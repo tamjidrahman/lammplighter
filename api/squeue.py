@@ -1,9 +1,10 @@
 import os
 import time
 from typing import List
+from uuid import UUID
 
 import boto3
-from sqlalchemy import UUID, Column
+from sqlalchemy import Column
 
 from api.database.crud import create_run, update_run_status
 from api.database.database import SessionLocal
@@ -20,7 +21,7 @@ if os.getenv("LAMMPS_INSTALLED") != "0":
 else:
     import api.test.lammps_mock as lammps
 
-__lammps_version__ = lammps.__version__
+__lammps_version__ = lammps.__version__  # type: ignore
 
 
 def receive_message() -> dict | None:
@@ -47,7 +48,7 @@ def receive_message() -> dict | None:
 
 
 def lamp_run(input_filename: str, run_id: Column[UUID], dump_commands: List[str]):
-    lmp = lammps.lammps()
+    lmp = lammps.lammps()  # type: ignore
 
     output_dir = f"outputs/{run_id}"
     os.makedirs(output_dir, exist_ok=True)
