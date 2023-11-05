@@ -24,14 +24,10 @@ def get_aws_db_secret():
 
     # Create a Secrets Manager client
     session = boto3.session.Session()
-    client = session.client(
-        service_name="secretsmanager", region_name=region_name
-    )
+    client = session.client(service_name="secretsmanager", region_name=region_name)
 
     try:
-        get_secret_value_response = client.get_secret_value(
-            SecretId=secret_name
-        )
+        get_secret_value_response = client.get_secret_value(SecretId=secret_name)
     except ClientError as e:
         # For a list of exceptions thrown, see
         # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
@@ -44,9 +40,7 @@ def get_aws_db_secret():
 
 if DB_SECRET_NAME:
     secret = json.loads(get_aws_db_secret())
-    DB_ENGINE = (
-        "postgresql" if secret["engine"] == "postgres" else secret["engine"]
-    )
+    DB_ENGINE = "postgresql" if secret["engine"] == "postgres" else secret["engine"]
     DB_USER = secret["username"]
     DB_HOSTNAME = secret["host"]
     DB_PASSWORD = secret["password"]

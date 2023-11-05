@@ -5,11 +5,7 @@ from api.database import models, schemas
 
 
 def get_input_by_name(db: Session, name: str):
-    return (
-        db.query(models.InputConfig)
-        .filter(models.InputConfig.name == name)
-        .first()
-    )
+    return db.query(models.InputConfig).filter(models.InputConfig.name == name).first()
 
 
 def get_inputs(db: Session, skip: int = 0, limit: int = 100):
@@ -43,9 +39,7 @@ def create_run(db: Session, run: schemas.RunCreate):
     inputconfig_name = run.inputconfig_name
     db_inputconfig = get_input_by_name(db, inputconfig_name)
 
-    db_run = models.Run(
-        input_id=db_inputconfig.id, commands=run.commands, status="NEW"
-    )
+    db_run = models.Run(input_id=db_inputconfig.id, commands=run.commands, status="NEW")
     db.add(db_run)
     db.commit()
     db.refresh(db_run)

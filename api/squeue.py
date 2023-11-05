@@ -8,9 +8,7 @@ from api.database.crud import create_run, update_run_status
 from api.database.database import SessionLocal
 from api.database.schemas import RunCreate
 
-QUEUE_URL = (
-    "https://sqs.us-east-2.amazonaws.com/217089594100/lammplighterQueue"
-)
+QUEUE_URL = "https://sqs.us-east-2.amazonaws.com/217089594100/lammplighterQueue"
 
 sqs = boto3.client("sqs", region_name="us-east-2")
 s3_client = boto3.client("s3", region_name="us-east-2")
