@@ -1,17 +1,16 @@
 import json
 from contextlib import asynccontextmanager
-from datetime import datetime
 from multiprocessing import Process
 from typing import List, Optional
 
 import boto3
-from fastapi import Depends, FastAPI, Query, UploadFile
+from fastapi import Depends, FastAPI, UploadFile
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 
-from api.database.crud import create_inputconfig, get_input_by_name
+from api.database.crud import create_inputconfig, create_run, get_input_by_name
 from api.database.database import SessionLocal
-from api.database.schemas import InputConfigCreate
+from api.database.schemas import InputConfigCreate, RunCreate
 from api.squeue import lammps, loop
 
 s3_client = boto3.client("s3", region_name="us-east-2")
@@ -120,25 +119,19 @@ def post_input(files: List[UploadFile], db: Session = Depends(get_db)):
 
 
 @app.post("/execute")
-async def run(input_filename: str, dump_commands: List[str] = Query(None)):
-    # s3_client.download_file(
-    #     "lammplighter",
-    #     f"resources/inputs/{input_filename}",
-    #     f"api/resources/inputs/{input_filename}",
-    # )
-    timestamp = datetime.now().strftime("%Y%m%d%H%M")
-    run_id = f"{input_filename}_{timestamp}"
+async def run(run: RunCreate, db: Session = Depends(get_db)):
+    db_run = create_run(db, run)
 
-    response = sqs.send_message(
+    sqs.send_message(
         QueueUrl=QUEUE_URL,
         DelaySeconds=10,
         MessageAttributes={
             "FileName": {
                 "DataType": "String",
-                "StringValue": f"{input_filename}",
+                "StringValue": f"{run.inputconfig_name}",
             },
-            "RunID": {"DataType": "String", "StringValue": f"{run_id}"},
+            "RunID": {"DataType": "String", "StringValue": f"{db_run.id}"},
         },
-        MessageBody=(json.dumps(dump_commands)),
+        MessageBody=(json.dumps(db_run.commands)),
     )
-    return response["MessageId"]
+    return db_run.id

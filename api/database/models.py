@@ -1,5 +1,7 @@
+import uuid
+
 from sqlalchemy import Column, ForeignKey, Integer, String
-from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import declarative_base, relationship
 
 from api.database.database import engine
@@ -10,17 +12,28 @@ Base = declarative_base()
 class InputConfig(Base):
     __tablename__ = "inputconfigs"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True)
-    s3_path = Column(String, unique=True)
+    id = Column(
+        UUID(as_uuid=True).with_variant(Integer, "sqlite"),
+        primary_key=True,
+        default=uuid.uuid4,
+    )
+    name = Column(String, index=True)
+    s3_path = Column(String)
     runs = relationship("Run", back_populates="input")
 
 
 class Run(Base):
     __tablename__ = "runs"
 
-    id = Column(Integer, primary_key=True, index=True)
-    input_id = Column(Integer, ForeignKey("inputconfigs.id"))
+    id = Column(
+        UUID(as_uuid=True).with_variant(Integer, "sqlite"),
+        primary_key=True,
+        default=uuid.uuid4,
+    )
+    input_id = Column(
+        UUID(as_uuid=True).with_variant(Integer, "sqlite"),
+        ForeignKey("inputconfigs.id"),
+    )
     commands = Column(JSON)
     status = Column(String)
 

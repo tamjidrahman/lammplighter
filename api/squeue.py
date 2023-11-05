@@ -1,7 +1,6 @@
 import json
 import os
 import time
-from datetime import datetime
 from typing import List, Optional
 
 import boto3
@@ -46,7 +45,7 @@ def receive_message() -> Optional[str]:
 def lamp_run(input_filename: str, run_id: str, dump_commands: List[str]):
     lmp = lammps.lammps()
 
-    output_dir = f"outputs/{run_id}"
+    output_dir = f"outputs/dev/{run_id}"
     os.makedirs(output_dir, exist_ok=True)
 
     log_filename = f"{output_dir}/{run_id}.log"
@@ -72,6 +71,7 @@ def read_and_execute():
     body = message["Body"]
 
     input_filename = message["MessageAttributes"]["FileName"]["StringValue"]
+    run_id = message["MessageAttributes"]["RunID"]["StringValue"]
     dump_commands = json.loads(body)
 
     os.makedirs("api/resources/inputs", exist_ok=True)
@@ -81,8 +81,6 @@ def read_and_execute():
         f"api/resources/inputs/{input_filename}",
     )
 
-    timestamp = datetime.now().strftime("%Y%m%d%H%M")
-    run_id = f"{input_filename}_{timestamp}"
     lamp_run(input_filename, run_id, dump_commands)
 
     return {f"Executing {run_id}"}

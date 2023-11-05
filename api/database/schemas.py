@@ -1,20 +1,24 @@
+from typing import List
+
 from pydantic import BaseModel, ConfigDict
 
 
 class RunBase(BaseModel):
     commands: str
-    status: str
 
 
 class RunCreate(RunBase):
+    inputconfig_name: str
+    commands: List[str]
     pass
 
 
 class Run(RunBase):
     model_config = ConfigDict(from_attributes=True)
 
-    id: int
+    status: str
     inputconfig_id: int
+    id: int
 
 
 class InputConfigBase(BaseModel):
