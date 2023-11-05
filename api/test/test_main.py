@@ -7,7 +7,7 @@ from api.main import app
 client = TestClient(app)
 
 
-@patch("api.main.lammps", __version__="unittest_version")
+@patch("api.main.lammps", __version__=0)
 def test_version(mock_lammps):
     response = client.get("/healthcheck")
     assert response.status_code == 200

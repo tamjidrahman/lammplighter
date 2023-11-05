@@ -1,6 +1,3 @@
-__version__ = "mock_version"
-
-
 def lammps():
     return MockLamps()
 
