@@ -28,7 +28,7 @@ RUN make install-python
 
 # load into app directory
 WORKDIR /app
-
+COPY .env ./
 # line below to copy api, but it should be mounted as a volume too for hot reloading
 ADD api ./api
 CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "80", "--reload"]
