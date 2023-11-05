@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-load_dotenv(".env.local")
+load_dotenv()
 
 DB_ENGINE = os.environ.get("DB_ENGINE")
 DB_USER = os.environ.get("DB_USER")
