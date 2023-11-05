@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class RunBase(BaseModel):
@@ -11,11 +11,10 @@ class RunCreate(RunBase):
 
 
 class Run(RunBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     inputconfig_id: int
-
-    class Config:
-        orm_mode = True
 
 
 class InputConfigBase(BaseModel):
@@ -28,8 +27,7 @@ class InputConfigCreate(InputConfigBase):
 
 
 class InputConfig(InputConfigBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     runs: list[Run] = []
-
-    class Config:
-        orm_mode = True
