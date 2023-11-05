@@ -4,3 +4,4 @@ api/resources
 api/resources/*
 lammplighter.db
 connect_db.sh
+**/.vscode/**

@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from api.database.crud import create_inputconfig, get_input_by_name
 from api.database.database import SessionLocal
 from api.database.schemas import HealthCheckResponse, InputConfigCreate, RunCreate
-from api.squeue import lammps, loop
+from api.squeue import __lammps_version__, loop
 
 s3_client = boto3.client("s3", region_name="us-east-2")
 sqs = boto3.client("sqs", region_name="us-east-2")
@@ -43,7 +43,7 @@ def get_db():
 @app.get("/healthcheck")
 async def healthcheck(db: Session = Depends(get_db)):
     db.execute(text("SELECT 1")).first()
-    return HealthCheckResponse(lammps_version=lammps.__version__)
+    return HealthCheckResponse(lammps_version=__lammps_version__)
 
 
 @app.get("/")
@@ -116,6 +116,8 @@ async def get_outputs(run_id: str, file_type: Optional[str] = None):
 def post_input(files: List[UploadFile], db: Session = Depends(get_db)):
     filenames = [file.filename for file in files]
     for file in files:
+        if file.filename is None:
+            continue
         if get_input_by_name(db, file.filename):
             return {f"Input {file.filename} already exists"}
 

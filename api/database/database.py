@@ -8,7 +8,7 @@ from sqlalchemy import URL, create_engine
 from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
-DB_ENGINE = os.environ.get("DB_ENGINE")
+DB_ENGINE = os.environ.get("DB_ENGINE", "")
 DB_USER = os.environ.get("DB_USER")
 DB_HOSTNAME = os.environ.get("DB_HOSTNAME")
 DB_PASSWORD = ""
@@ -23,7 +23,7 @@ def get_aws_db_secret():
     region_name = DB_SECRET_REGION
 
     # Create a Secrets Manager client
-    session = boto3.session.Session()
+    session = boto3.Session()
     client = session.client(service_name="secretsmanager", region_name=region_name)
 
     try:
@@ -40,14 +40,14 @@ def get_aws_db_secret():
 
 if DB_SECRET_NAME:
     secret = json.loads(get_aws_db_secret())
-    DB_ENGINE = "postgresql" if secret["engine"] == "postgres" else secret["engine"]
+    DB_ENGINE = secret["engine"]
     DB_USER = secret["username"]
     DB_HOSTNAME = secret["host"]
     DB_PASSWORD = secret["password"]
     DB_PORT = secret["port"]
 
 url_object = URL.create(
-    DB_ENGINE,
+    drivername="postgresql" if DB_ENGINE == "postgres" else DB_ENGINE,
     username=DB_USER,
     password=DB_PASSWORD,
     host=DB_HOSTNAME,

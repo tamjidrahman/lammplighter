@@ -1,8 +1,9 @@
 import os
 import time
-from typing import List, Optional
+from typing import List
 
 import boto3
+from sqlalchemy import UUID, Column
 
 from api.database.crud import create_run, update_run_status
 from api.database.database import SessionLocal
@@ -14,14 +15,15 @@ sqs = boto3.client("sqs", region_name="us-east-2")
 s3_client = boto3.client("s3", region_name="us-east-2")
 db = SessionLocal()
 
-
 if os.getenv("LAMMPS_INSTALLED") != "0":
     import lammps
 else:
     import api.test.lammps_mock as lammps
 
+__lammps_version__ = lammps.__version__
 
-def receive_message() -> Optional[str]:
+
+def receive_message() -> dict | None:
     """Pull message from SQS if possible, else return None"""
 
     response = sqs.receive_message(
@@ -44,7 +46,7 @@ def receive_message() -> Optional[str]:
     return None
 
 
-def lamp_run(input_filename: str, run_id: str, dump_commands: List[str]):
+def lamp_run(input_filename: str, run_id: Column[UUID], dump_commands: List[str]):
     lmp = lammps.lammps()
 
     output_dir = f"outputs/{run_id}"
@@ -65,13 +67,16 @@ def lamp_run(input_filename: str, run_id: str, dump_commands: List[str]):
 
 
 def read_and_execute():
-    message = None
+    message: dict | None = None
     while not message:
         time.sleep(1)
         message = receive_message()
 
     run: RunCreate = RunCreate.model_validate_json(message["Body"])
     db_run = create_run(db, run)
+
+    if not db_run:
+        return
 
     os.makedirs("api/resources/inputs", exist_ok=True)
     s3_client.download_file(
