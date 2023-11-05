@@ -5,9 +5,13 @@ from multiprocessing import Process
 from typing import List, Optional
 
 import boto3
-from fastapi import FastAPI, Query, UploadFile
+from fastapi import Depends, FastAPI, Query, UploadFile
 from fastapi.responses import HTMLResponse
+from sqlalchemy.orm import Session
 
+from api.database.crud import create_inputconfig, get_input_by_name
+from api.database.database import SessionLocal
+from api.database.schemas import InputConfigCreate
 from api.squeue import lammps, loop
 
 s3_client = boto3.client("s3", region_name="us-east-2")
@@ -28,6 +32,15 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 @app.get("/healthcheck")
@@ -88,12 +101,21 @@ async def get_outputs(run_id: str, file_type: Optional[str] = None):
 
 
 @app.post("/resources/inputs/")
-def post_input(files: List[UploadFile]):
+def post_input(files: List[UploadFile], db: Session = Depends(get_db)):
     filenames = [file.filename for file in files]
     for file in files:
+        if get_input_by_name(db, file.filename):
+            return {f"Input {file.filename} already exists"}
+
+        s3_path = f"resources/inputs/{file.filename}"
+        input_config_create_model = InputConfigCreate(
+            name=file.filename, s3_path=s3_path
+        )
+        create_inputconfig(db, input_config_create_model)
         s3_client.upload_fileobj(
             file.file, "lammplighter", f"resources/inputs/{file.filename}"
         )
+
     return {f"Uploaded: {filenames}"}
 
 
