@@ -15,7 +15,13 @@ def get_inputs(db: Session, skip: int = 0, limit: int = 100):
 
 
 def get_runs(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Run).offset(skip).limit(limit).all()
+    return (
+        db.query(models.Run, models.InputConfig)
+        .join(models.InputConfig, models.Run.input_id == models.InputConfig.id)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 def update_run_status(db: Session, run_id: Column[UUID], status: str):

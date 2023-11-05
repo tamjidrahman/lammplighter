@@ -4,13 +4,20 @@ from typing import List, Optional
 
 import boto3
 from fastapi import Depends, FastAPI, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from api.database.crud import create_inputconfig, get_input_by_name
+from api.database.crud import get_runs as db_get_runs
 from api.database.database import SessionLocal
-from api.database.schemas import HealthCheckResponse, InputConfigCreate, RunCreate
+from api.database.schemas import (
+    HealthCheckResponse,
+    InputConfigCreate,
+    JoinedRuns,
+    RunCreate,
+)
 from api.squeue import __lammps_version__, loop
 
 s3_client = boto3.client("s3", region_name="us-east-2")
@@ -29,6 +36,17 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+origins = ["http://localhost:3000", "localhost:3000"]
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # Dependency
@@ -110,6 +128,11 @@ async def get_outputs(run_id: str, file_type: Optional[str] = None):
             )
         }
     return {"No such file"}
+
+
+@app.get("/runs")
+async def get_runs(db: Session = Depends(get_db)):
+    return [JoinedRuns(run=jr[0], inputconfig=jr[1]) for jr in db_get_runs(db)]
 
 
 @app.post("/resources/inputs/")
