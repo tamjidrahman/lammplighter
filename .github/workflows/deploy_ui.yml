@@ -1,5 +1,5 @@
 # Update base lammp image only when Dockerfile.lammp is changed
-name: LAMMPS publish
+name: UI publish
 
 on:
   push:
@@ -39,7 +39,7 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           # Build a docker container and push it to ECR so that it can
-          docker build -f Dockerfile.lammp -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker build -f Dockerfile.ui -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           
           # Also tag with latest
           docker image tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
