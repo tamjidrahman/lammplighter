@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from . import models, schemas
+from api.database import models, schemas
 
 
 def get_input_by_name(db: Session, name: str):
@@ -32,9 +32,14 @@ def create_inputconfig(db: Session, inputconfig: schemas.InputConfigCreate):
     return db_inputconfig
 
 
-# def create_user_item(db: Session, item: schemas.ItemCreate, user_id: int):
-#     db_item = models.Item(**item.dict(), owner_id=user_id)
-#     db.add(db_item)
-#     db.commit()
-#     db.refresh(db_item)
-#     return db_item
+def create_run(db: Session, run: schemas.RunCreate):
+    inputconfig_name = run.inputconfig_name
+    db_inputconfig = get_input_by_name(db, inputconfig_name)
+
+    db_run = models.Run(
+        input_id=db_inputconfig.id, commands=run.commands, status="NEW"
+    )
+    db.add(db_run)
+    db.commit()
+    db.refresh(db_run)
+    return db_run
