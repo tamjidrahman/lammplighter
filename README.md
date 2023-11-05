@@ -15,6 +15,11 @@ API code is mounted as a volume for fast reloading. The first build may take a f
 docker build -t lammplighter . && docker run -d -t -p 80:80 --env-file .env -v $PGPASSFILE:/root/.pgpass -v $(pwd)/api:/app/api -v ~/.aws:/root/.aws lammplighter
 ```
 
+Run UI
+```
+docker build -t lammplighter_ui -f Dockerfile.ui . && docker run -d -t -p 3000:3000 -v $(pwd)/ui/src:/react-app/src lammplighter_ui
+```
+
 ## Run Tests
 Run
 ```pytest```
