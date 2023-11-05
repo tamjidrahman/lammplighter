@@ -4,10 +4,9 @@ Recommended development within a docker container. Local installations will requ
 
 - Install poetry.
 - Install lammps, with python package.
+- If connecting to remote PostGres RDS, set up a $PGPASSFILE
 
-# Getting started
-
-## Development
+## Run Docker Server
 Build lammps and fastAPI image on top in a local docker container. 
 
 API code is mounted as a volume for fast reloading. The first build may take a few minutes.
@@ -15,6 +14,12 @@ API code is mounted as a volume for fast reloading. The first build may take a f
 ```
 docker build -t lammplighter . && docker run -d -t -p 80:80 --env-file .env -v $PGPASSFILE:/root/.pgpass -v $(pwd)/api:/app/api -v ~/.aws:/root/.aws lammplighter
 ```
+
+## Run Tests
+Run
+```pytest```
+
+Note that pytest uses pytest.ini and .test.env
 
 ## Rebuilding LAMMP image
 ```
