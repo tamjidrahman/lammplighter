@@ -1,3 +1,4 @@
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from api.database import models, schemas
@@ -19,7 +20,13 @@ def get_runs(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Run).offset(skip).limit(limit).all()
 
 
-# def create_input(db: Session, item: schemas.ItemCreate):
+def update_run_status(db: Session, run_id: str, status: str):
+    db.execute(
+        update(models.Run)
+        .where(models.Run.id == run_id)
+        .values({models.Run.status: status})
+    )
+    db.commit()
 
 
 def create_inputconfig(db: Session, inputconfig: schemas.InputConfigCreate):
