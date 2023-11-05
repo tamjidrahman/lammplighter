@@ -3,7 +3,7 @@
     "containerDefinitions": [
         {
             "name": "lamplighter-api",
-            "image": "217089594100.dkr.ecr.us-east-2.amazonaws.com/lammplighter:b3d775f5903c8772b415c292e79606c8dd16f7a3",
+            "image": "217089594100.dkr.ecr.us-east-2.amazonaws.com/lammplighter:latest",
             "cpu": 0,
             "portMappings": [
                 {
@@ -15,6 +15,34 @@
                 }
             ],
             "essential": true,
+            "environment": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-create-group": "true",
+                    "awslogs-group": "/ecs/",
+                    "awslogs-region": "us-east-2",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            }
+        },
+        {
+            "name": "lamplighter-ui",
+            "image": "217089594100.dkr.ecr.us-east-2.amazonaws.com/lammplighter_ui:latest",
+            "cpu": 0,
+            "portMappings": [
+                {
+                    "name": "lamplighter-ui-3000-tcp",
+                    "containerPort": 3000,
+                    "hostPort": 3000,
+                    "protocol": "tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": false,
             "environment": [],
             "mountPoints": [],
             "volumesFrom": [],
