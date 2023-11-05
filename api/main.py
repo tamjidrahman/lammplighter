@@ -49,15 +49,33 @@ async def healthcheck():
 
 @app.get("/")
 async def main():
-    content = """
-<body>
-<form action="/resources/inputs/" enctype="multipart/form-data" method="post">
-<input name="files" type="file" multiple>
-<input type="submit">
-</form>
-</body>
+    files = s3_client.list_objects_v2(
+        Bucket="lammplighter", Prefix="resources/inputs/"
+    ).get("Contents")
+
+    filenames = [file.get("Key").split("/")[-1] for file in files]
+
+    input_configs_html = f"""
+    <ul>
+    {''.join([f"<li>{filename}</li>" for filename in filenames if filename])}
+    </ul>
     """
-    return HTMLResponse(content=content)
+
+    content = """
+    <body>
+    <form
+        action="/resources/inputs/"
+        enctype="multipart/form-data"
+        method="post"
+    >
+    <input name="files" type="file" multiple>
+    <input type="submit">
+    </form>
+    </body>
+    """
+    return HTMLResponse(
+        content="<h1>Hi Laura <3 </h1>" + input_configs_html + content
+    )
 
 
 @app.get("/resources/inputs/")
@@ -69,7 +87,7 @@ async def get_inputs():
     filenames = None
     if files:
         filenames = [file.get("Key").split("/")[-1] for file in files]
-    return {"resources/inputs/": filenames}
+    return {"files": filenames}
 
 
 @app.get("/outputs")
