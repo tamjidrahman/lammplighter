@@ -49,7 +49,7 @@ def receive_message() -> Optional[str]:
 def lamp_run(input_filename: str, run_id: str, dump_commands: List[str]):
     lmp = lammps.lammps()
 
-    output_dir = f"outputs/dev/{run_id}"
+    output_dir = f"outputs/{run_id}"
     os.makedirs(output_dir, exist_ok=True)
 
     log_filename = f"{output_dir}/{run_id}.log"
