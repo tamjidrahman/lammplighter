@@ -61,7 +61,7 @@ def lamp_run(input_id: str, run_id: Column[UUID], dump_commands: List[str]):
 
     lmp.file(f"api/resources/inputs/{input_id}")
 
-    shutil.make_archive(f"{output_dir}/{run_id}", "zip", None, output_dir)
+    shutil.make_archive(f"{output_dir}/{run_id}", "zip", output_dir, None)
 
     for filename in os.listdir(output_dir):
         with open(f"{output_dir}/{filename}", "rb") as log_file:
