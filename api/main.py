@@ -10,6 +10,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from api.database.crud import create_inputconfig, get_input_by_name
+from api.database.crud import get_inputs as db_get_inputs
 from api.database.crud import get_runs as db_get_runs
 from api.database.database import SessionLocal
 from api.database.schemas import (
@@ -94,15 +95,8 @@ async def main():
 
 
 @app.get("/resources/inputs/")
-async def get_inputs():
-    files = s3_client.list_objects_v2(
-        Bucket="lammplighter", Prefix="resources/inputs/"
-    ).get("Contents")
-
-    filenames = None
-    if files:
-        filenames = [file.get("Key").split("/")[-1] for file in files]
-    return {"files": filenames}
+async def get_inputs(db: Session = Depends(get_db)):
+    return db_get_inputs(db)
 
 
 @app.get("/outputs")
@@ -144,20 +138,17 @@ def post_input(files: List[UploadFile], db: Session = Depends(get_db)):
         if get_input_by_name(db, file.filename):
             return {f"Input {file.filename} already exists"}
 
-        s3_path = f"resources/inputs/{file.filename}"
-        input_config_create_model = InputConfigCreate(
-            name=file.filename, s3_path=s3_path
-        )
-        create_inputconfig(db, input_config_create_model)
+        db_inputconfig = create_inputconfig(db, InputConfigCreate(name=file.filename))
+
         s3_client.upload_fileobj(
-            file.file, "lammplighter", f"resources/inputs/{file.filename}"
+            file.file, "lammplighter", f"resources/inputs/{db_inputconfig.id}"
         )
 
     return {f"Uploaded: {filenames}"}
 
 
 @app.post("/execute")
-async def run(run: RunCreate, db: Session = Depends(get_db)):
+async def run(run: RunCreate):
     sqs.send_message(
         QueueUrl=QUEUE_URL,
         DelaySeconds=10,

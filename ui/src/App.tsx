@@ -3,6 +3,7 @@ import MyTable from './Table';
 
 import React from 'react';
 import { Container, Grid, Typography } from '@mui/material';
+import NewRunForm from './NewRunForm';
 
 const App: React.FC = () => {
   return (
@@ -14,6 +15,7 @@ const App: React.FC = () => {
       <Grid container justifyContent="flex-end" alignItems="center">
         <FileUpload />
       </Grid>
+      <NewRunForm />
 
       <MyTable />
 

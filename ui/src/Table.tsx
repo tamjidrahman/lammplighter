@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination, IconButton } from '@mui/material';
 import GetAppIcon from '@mui/icons-material/GetApp';
 
-interface InputConfig {
+export interface InputConfig {
     id: number;
     name: string;
     s3_path: string;

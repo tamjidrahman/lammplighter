@@ -34,9 +34,7 @@ def update_run_status(db: Session, run_id: Column[UUID], status: str):
 
 
 def create_inputconfig(db: Session, inputconfig: schemas.InputConfigCreate):
-    db_inputconfig = models.InputConfig(
-        name=inputconfig.name, s3_path=inputconfig.s3_path
-    )
+    db_inputconfig = models.InputConfig(name=inputconfig.name)
     db.add(db_inputconfig)
     db.commit()
     db.refresh(db_inputconfig)
@@ -44,12 +42,7 @@ def create_inputconfig(db: Session, inputconfig: schemas.InputConfigCreate):
 
 
 def create_run(db: Session, run: schemas.RunCreate) -> models.Run | None:
-    inputconfig_name = run.inputconfig_name
-    db_inputconfig = get_input_by_name(db, inputconfig_name)
-    if db_inputconfig is None:
-        return None
-
-    db_run = models.Run(input_id=db_inputconfig.id, commands=run.commands, status="NEW")
+    db_run = models.Run(input_id=run.input_id, commands=run.commands, status="NEW")
     db.add(db_run)
     db.commit()
     db.refresh(db_run)

@@ -18,7 +18,6 @@ class InputConfig(Base):
         default=uuid.uuid4,
     )
     name = Column(String, index=True)
-    s3_path = Column(String)
     runs = relationship("Run", back_populates="input")
 
 

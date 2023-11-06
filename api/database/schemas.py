@@ -6,7 +6,6 @@ from pydantic import BaseModel, ConfigDict
 
 class InputConfigBase(BaseModel):
     name: str
-    s3_path: str
 
 
 class InputConfigCreate(InputConfigBase):
@@ -24,7 +23,7 @@ class RunBase(BaseModel):
 
 
 class RunCreate(RunBase):
-    inputconfig_name: str
+    input_id: uuid.UUID
     pass
 
 
@@ -32,7 +31,6 @@ class Run(RunBase):
     model_config = ConfigDict(from_attributes=True)
 
     status: str
-    input_id: uuid.UUID
     id: uuid.UUID
 
 

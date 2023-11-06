@@ -47,7 +47,7 @@ def receive_message() -> dict | None:
     return None
 
 
-def lamp_run(input_filename: str, run_id: Column[UUID], dump_commands: List[str]):
+def lamp_run(input_id: str, run_id: Column[UUID], dump_commands: List[str]):
     lmp = lammps.lammps()  # type: ignore
 
     output_dir = f"outputs/{run_id}"
@@ -58,7 +58,7 @@ def lamp_run(input_filename: str, run_id: Column[UUID], dump_commands: List[str]
     for i, cmd in enumerate(dump_commands):
         lmp.command(f"dump {i} {cmd} {output_dir}/{run_id}.{i}.dump")
 
-    lmp.file(f"api/resources/inputs/{input_filename}")
+    lmp.file(f"api/resources/inputs/{input_id}")
 
     for filename in os.listdir(output_dir):
         with open(f"{output_dir}/{filename}", "rb") as log_file:
@@ -82,12 +82,12 @@ def read_and_execute():
     os.makedirs("api/resources/inputs", exist_ok=True)
     s3_client.download_file(
         "lammplighter",
-        f"resources/inputs/{run.inputconfig_name}",
-        f"api/resources/inputs/{run.inputconfig_name}",
+        f"resources/inputs/{run.input_id}",
+        f"api/resources/inputs/{run.input_id}",
     )
 
     update_run_status(db, db_run.id, "IN PROGRESS")
-    lamp_run(run.inputconfig_name, db_run.id, run.commands)
+    lamp_run(db_run.input_id, db_run.id, run.commands)
     update_run_status(db, db_run.id, "COMPLETE")
 
 
