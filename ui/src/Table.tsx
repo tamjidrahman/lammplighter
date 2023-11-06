@@ -51,10 +51,8 @@ const MyTable: React.FC = () => {
         const intervalId = setInterval(() => {
             if (refreshTimer <= 0) {
                 fetchData();
-                console.log(refreshTimer)
                 setRefreshTimer(100);
             } else {
-                console.log(refreshTimer)
                 setRefreshTimer(refreshTimer - 1);
             }
         }, 100);
@@ -82,7 +80,13 @@ const MyTable: React.FC = () => {
         })
             .then((response) => {
                 // Implement the logic to determine downloadable files
-                return response.data; // Assuming response.data contains downloadable files
+                const presignedUrl = response.data[0]
+                console.log(presignedUrl)
+                const link = document.createElement("a");
+                link.href = presignedUrl;
+                link.download = runId.toString();
+                link.target = "_blank";
+                link.click();
             })
             .catch((error) => {
                 console.error('Error determining downloadable files:', error);

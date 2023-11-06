@@ -108,7 +108,16 @@ async def get_outputs(run_id: str, file_type: Optional[str] = None):
     filenames = [file.get("Key").split("/")[-1] for file in files] if files else []
 
     if not file_type:
-        return filenames
+        return {
+            s3_client.generate_presigned_url(
+                "get_object",
+                Params={
+                    "Bucket": "lammplighter",
+                    "Key": f"outputs/{run_id}/{run_id}.zip",
+                },
+                ExpiresIn=60,
+            )
+        }
 
     if f"{run_id}.{file_type}" in filenames:
         return {

@@ -1,4 +1,5 @@
 import os
+import shutil
 import time
 from typing import List
 from uuid import UUID
@@ -59,6 +60,8 @@ def lamp_run(input_id: str, run_id: Column[UUID], dump_commands: List[str]):
         lmp.command(f"dump {i} {cmd} {output_dir}/{run_id}.{i}.dump")
 
     lmp.file(f"api/resources/inputs/{input_id}")
+
+    shutil.make_archive(f"{output_dir}/{run_id}", "zip", None, output_dir)
 
     for filename in os.listdir(output_dir):
         with open(f"{output_dir}/{filename}", "rb") as log_file:
