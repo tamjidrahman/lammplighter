@@ -145,6 +145,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check out
+        uses: actions/checkout@v4
 
       - name: Fill in the new API image ID in the Amazon ECS task definition
         id: api-task-def
