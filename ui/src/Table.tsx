@@ -22,8 +22,7 @@ interface TableRowData {
     inputconfig: InputConfig;
     // Add more fields as needed
 }
-const instance = axios.create({ baseURL: 'http://localhost:80' })
-
+const instance = axios.create({ baseURL: process.env.REACT_APP_API_URL })
 const MyTable: React.FC = () => {
     const [data, setData] = useState<TableRowData[]>([]);
 
