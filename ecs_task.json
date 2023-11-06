@@ -2,12 +2,12 @@
     "family": "lammplighter",
     "containerDefinitions": [
         {
-            "name": "lamplighter-api",
+            "name": "lammplighter-api",
             "image": "217089594100.dkr.ecr.us-east-2.amazonaws.com/lammplighter:latest",
             "cpu": 0,
             "portMappings": [
                 {
-                    "name": "lamplighter-api-80-tcp",
+                    "name": "lammplighter-api-80-tcp",
                     "containerPort": 80,
                     "hostPort": 80,
                     "protocol": "tcp",
@@ -30,12 +30,12 @@
             }
         },
         {
-            "name": "lamplighter-ui",
+            "name": "lammplighter-ui",
             "image": "217089594100.dkr.ecr.us-east-2.amazonaws.com/lammplighter_ui:latest",
             "cpu": 0,
             "portMappings": [
                 {
-                    "name": "lamplighter-ui-3000-tcp",
+                    "name": "lammplighter-ui-3000-tcp",
                     "containerPort": 3000,
                     "hostPort": 3000,
                     "protocol": "tcp",

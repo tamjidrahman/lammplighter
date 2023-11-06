@@ -6,11 +6,16 @@ on:
 
 env:
   AWS_REGION: us-east-2
-  ECR_REPOSITORY: lammplighter
-  ECS_SERVICE: lammplighter
+
+  API_ECR_REPOSITORY: lammplighter
+  API_CONTAINER_NAME: lammplighter-api
+
+  UI_ECR_REPOSITORY: lammplighter_ui
+  UI_CONTAINER_NAME: lammplighter-ui
+
+  ECS_SERVICE: lammplighter-app
   ECS_CLUSTER: lammplighter
   ECS_TASK_DEFINITION: ecs_task.json
-  CONTAINER_NAME: lamplighter-api
 
 jobs:
   test:
@@ -61,7 +66,6 @@ jobs:
 
   deploy:
     needs: test
-
     runs-on: ubuntu-latest
 
     steps:
@@ -80,32 +84,55 @@ jobs:
         uses: aws-actions/amazon-ecr-login@62f4f872db3836360b72999f4b87f1ff13310f3a
 
       - name: Build, tag, and push image to Amazon ECR
-        id: build-image
+        id: build-api-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
           # Build a docker container and push it to ECR so that it can
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker build -t $ECR_REGISTRY/$API_ECR_REPOSITORY:$IMAGE_TAG .
           
           # Also tag with latest
-          docker image tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker image tag $ECR_REGISTRY/$API_ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$API_ECR_REPOSITORY:latest
 
-          docker push --all-tags $ECR_REGISTRY/$ECR_REPOSITORY
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-      
+          docker push --all-tags $ECR_REGISTRY/$API_ECR_REPOSITORY
+          echo "image=$ECR_REGISTRY/$API_ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-ui-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # Build a docker container and push it to ECR so that it can
+          docker build -t $ECR_REGISTRY/$UI_ECR_REPOSITORY:$IMAGE_TAG .
+          
+          # Also tag with latest
+          docker image tag $ECR_REGISTRY/$UI_ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$UI_ECR_REPOSITORY:latest
+
+          docker push --all-tags $ECR_REGISTRY/$UI_ECR_REPOSITORY
+          echo "image=$ECR_REGISTRY/$UI_ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+  
       - name: Fill in the new image ID in the Amazon ECS task definition
-        id: task-def
+        id: api-task-def
         uses: aws-actions/amazon-ecs-render-task-definition@c804dfbdd57f713b6c079302a4c01db7017a36fc
         with:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
-          container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.build-image.outputs.image }}
+          container-name: ${{ env.API_CONTAINER_NAME }}
+          image: ${{ steps.build-api-image.outputs.image}}
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: ui-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@c804dfbdd57f713b6c079302a4c01db7017a36fc
+        with:
+          task-definition: ${{ steps.api-task-def.outputs.task-definition }}
+          container-name: ${{ env.UI_CONTAINER_NAME }}
+          image: ${{ steps.build-ui-image.outputs.image }}
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@df9643053eda01f169e64a0e60233aacca83799a
         with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          task-definition: ${{ steps.ui-task-def.outputs.task-definition }}
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
