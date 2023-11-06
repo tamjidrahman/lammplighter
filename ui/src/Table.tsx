@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination, IconButton, Typography } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination, IconButton, Typography, CircularProgress } from '@mui/material';
 import GetAppIcon from '@mui/icons-material/GetApp';
 
 export interface InputConfig {
@@ -24,23 +24,45 @@ interface TableRowData {
     // Add more fields as needed
 }
 
-const instance = axios.create({ baseURL: process.env.REACT_APP_API_URL })
+const instance = axios.create({ baseURL: process.env.REACT_APP_API_URL });
 
 const MyTable: React.FC = () => {
     const [data, setData] = useState<TableRowData[]>([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [loading, setLoading] = useState(false);
+    const [refreshTimer, setRefreshTimer] = useState(0);
 
-    useEffect(() => {
-        // Replace 'YOUR_API_ENDPOINT' with the actual REST API endpoint
+    const fetchData = () => {
+        setLoading(true);
         instance.get("runs")
             .then((response) => {
                 setData(response.data);
+                setLoading(false);
             })
             .catch((error) => {
                 console.error('Error fetching data:', error);
+                setLoading(false);
             });
-    }, []);
+    };
+
+    useEffect(() => {
+
+        const intervalId = setInterval(() => {
+            if (refreshTimer <= 0) {
+                fetchData();
+                console.log(refreshTimer)
+                setRefreshTimer(100);
+            } else {
+                console.log(refreshTimer)
+                setRefreshTimer(refreshTimer - 1);
+            }
+        }, 100);
+
+        return () => {
+            clearInterval(intervalId);
+        };
+    }, [refreshTimer]);
 
     const handleChangePage = (event: unknown, newPage: number) => {
         setPage(newPage);
@@ -76,13 +98,37 @@ const MyTable: React.FC = () => {
                 padding: '20px',
                 border: '1px solid #e0e0e0',
                 borderRadius: '5px',
+                position: 'relative',
             }}
         >
             <Typography variant="h5" style={{ marginBottom: '20px' }}>
                 Runs
             </Typography>
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    position: 'absolute',
+                    top: '10px',
+                    right: '10px',
+                    width: '40px',
+                    height: '40px',
+                    zIndex: 1,
+                }}
+            >
+                {loading ? (
+                    <CircularProgress variant='determinate' size={40} thickness={4} value={100 - (refreshTimer)} />
+                ) : (
+                    <CircularProgress
+                        variant='determinate'
+                        size={40}
+                        thickness={4}
+                        value={100 - (refreshTimer)}
+                    />
+                )}
+            </div>
             <TableContainer component={Paper}>
-
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -106,7 +152,6 @@ const MyTable: React.FC = () => {
                                             color="primary"
                                             onClick={() => downloadables(row.run.id)}
                                         >
-                                            {row.run.status}
                                             <GetAppIcon />
                                         </IconButton>
                                     ) : (
