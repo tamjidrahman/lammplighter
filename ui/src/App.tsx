@@ -1,27 +1,50 @@
 import FileUpload from './FileUpload';
 import MyTable from './Table';
 
-import React from 'react';
 import { Container, Grid, Typography } from '@mui/material';
 import NewRunForm from './NewRunForm';
 
-const App: React.FC = () => {
+import {
+  ClerkProvider,
+  SignedIn,
+  SignedOut,
+  RedirectToSignIn,
+  UserButton
+} from "@clerk/clerk-react";
+
+if (!process.env.REACT_APP_CLERK_PUBLISHABLE_KEY) {
+  throw "Missing Publishable Key"
+}
+
+const clerkPubKey = process.env.REACT_APP_CLERK_PUBLISHABLE_KEY;
+
+function App() {
   return (
-    <Container maxWidth="lg">
-      <Typography variant="h4" gutterBottom>
-        Lammplighter
-      </Typography>
+    <ClerkProvider publishableKey={clerkPubKey}>
+      <SignedIn>
 
-      <Grid container justifyContent="flex-end" alignItems="center">
-        <FileUpload />
-      </Grid>
-      <NewRunForm />
+        <Container maxWidth="lg">
+          <Typography variant="h4" gutterBottom>
+            Lammplighter
+          </Typography>
 
-      <MyTable />
+          <UserButton />
 
-      {/* You can add more components or content as needed */}
-    </Container>
+          <Grid container justifyContent="flex-end" alignItems="center">
+            <FileUpload />
+          </Grid>
+          <NewRunForm />
+
+          <MyTable />
+
+          {/* You can add more components or content as needed */}
+        </Container>
+      </SignedIn>
+      <SignedOut>
+        <RedirectToSignIn />
+      </SignedOut>
+    </ClerkProvider>
   );
-};
+}
 
 export default App;
