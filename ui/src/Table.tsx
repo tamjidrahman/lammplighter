@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination, IconButton } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination, IconButton, Typography } from '@mui/material';
 import GetAppIcon from '@mui/icons-material/GetApp';
 
 export interface InputConfig {
@@ -71,8 +71,18 @@ const MyTable: React.FC = () => {
     const slicedData = data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
     return (
-        <div>
+        <div
+            style={{
+                padding: '20px',
+                border: '1px solid #e0e0e0',
+                borderRadius: '5px',
+            }}
+        >
+            <Typography variant="h5" style={{ marginBottom: '20px' }}>
+                Runs
+            </Typography>
             <TableContainer component={Paper}>
+
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -80,7 +90,6 @@ const MyTable: React.FC = () => {
                             <TableCell>InputName</TableCell>
                             <TableCell>Commands</TableCell>
                             <TableCell>Status</TableCell>
-                            <TableCell>Downloadable Files</TableCell>
                             {/* Add more table headers as needed */}
                         </TableRow>
                     </TableHead>
@@ -90,7 +99,6 @@ const MyTable: React.FC = () => {
                                 <TableCell>{row.run.id}</TableCell>
                                 <TableCell>{row.inputconfig.name}</TableCell>
                                 <TableCell>{row.run.commands.join(', ')}</TableCell>
-                                <TableCell>{row.run.status}</TableCell>
                                 <TableCell>
                                     {row.run.status === 'COMPLETE' ? (
                                         <IconButton
@@ -98,10 +106,11 @@ const MyTable: React.FC = () => {
                                             color="primary"
                                             onClick={() => downloadables(row.run.id)}
                                         >
+                                            {row.run.status}
                                             <GetAppIcon />
                                         </IconButton>
                                     ) : (
-                                        'N/A'
+                                        row.run.status // Display the status as is
                                     )}
                                 </TableCell>
                                 {/* Add more table cells as needed */}

@@ -92,7 +92,7 @@ const NewRunForm: React.FC = () => {
                             border={1}
                             borderRadius="5px"
                             p={2}
-                            style={{ marginBottom: '20px' }}
+                            style={{ marginBottom: '20px', backgroundColor: '#f9f9f9' }}
                         >
                             <Typography variant="h6">Choose Input</Typography>
                             <FormControl fullWidth>
@@ -118,7 +118,7 @@ const NewRunForm: React.FC = () => {
                         </Box>
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                        <Box border={1} borderRadius="5px" p={2}>
+                        <Box border={1} borderRadius="5px" p={2} style={{ backgroundColor: '#f9f9f9' }}>
                             <Typography variant="h6">Add Commands</Typography>
                             {commands.map((command, index) => (
                                 <Grid item xs={12} key={index}>
@@ -155,16 +155,18 @@ const NewRunForm: React.FC = () => {
                                 </Button>
                             </Grid>
                         </Box>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            style={{ float: 'right', marginTop: '20px' }}
+                        >
+                            Submit Run Configuration
+                        </Button>
                     </Grid>
+
                 </Grid>
-                <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    style={{ float: 'left', marginTop: '20px' }}
-                >
-                    Submit
-                </Button>
+
             </form>
         </div>
     );
