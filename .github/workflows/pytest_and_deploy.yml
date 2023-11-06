@@ -64,9 +64,12 @@ jobs:
           source .venv/bin/activate
           LAMMPS_INSTALLED=0 pytest --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
 
-  deploy:
+  build-api:
     needs: test
     runs-on: ubuntu-latest
+
+    outputs:
+      image: ${{ steps.build-api-image.outputs.image }}
 
     steps:
       - name: Check out
@@ -98,6 +101,28 @@ jobs:
           docker push --all-tags $ECR_REGISTRY/$API_ECR_REPOSITORY
           echo "image=$ECR_REGISTRY/$API_ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
+  build-ui:
+    needs: test
+    runs-on: ubuntu-latest
+
+    outputs:
+      image: ${{ steps.build-ui-image.outputs.image }}
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@0e613a0980cbf65ed5b322eb7a1e075d28913a83
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@62f4f872db3836360b72999f4b87f1ff13310f3a
+
       - name: Build, tag, and push UI image to Amazon ECR
         id: build-ui-image
         env:
@@ -112,14 +137,20 @@ jobs:
 
           docker push --all-tags $ECR_REGISTRY/$UI_ECR_REPOSITORY
           echo "image=$ECR_REGISTRY/$UI_ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-  
+
+  deploy:
+    needs: ['build-api', 'build-ui']
+    runs-on: ubuntu-latest
+
+    steps:
+
       - name: Fill in the new API image ID in the Amazon ECS task definition
         id: api-task-def
         uses: aws-actions/amazon-ecs-render-task-definition@c804dfbdd57f713b6c079302a4c01db7017a36fc
         with:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
           container-name: ${{ env.API_CONTAINER_NAME }}
-          image: ${{ steps.build-api-image.outputs.image}}
+          image: ${{ needs.build-api.outputs.image}}
 
       - name: Fill in the new UI image ID in the Amazon ECS task definition
         id: ui-task-def
@@ -127,7 +158,7 @@ jobs:
         with:
           task-definition: ${{ steps.api-task-def.outputs.task-definition }}
           container-name: ${{ env.UI_CONTAINER_NAME }}
-          image: ${{ steps.build-ui-image.outputs.image }}
+          image: ${{ needs.build-ui.outputs.image}}
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@df9643053eda01f169e64a0e60233aacca83799a
