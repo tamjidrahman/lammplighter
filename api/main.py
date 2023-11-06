@@ -114,7 +114,7 @@ async def get_outputs(run_id: str, file_type: Optional[str] = None):
     filenames = [file.get("Key").split("/")[-1] for file in files] if files else []
 
     if not file_type:
-        return {"outputs/": filenames}
+        return filenames
 
     if f"{run_id}.{file_type}" in filenames:
         return {
