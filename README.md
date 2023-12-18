@@ -1,3 +1,11 @@
+# Lammplighter
+
+Many computational tools lack containerization, despite the fact that consistent results require consistent deployment configurations.
+Lammplighter offers deployment configuration, state initialization, and runtime configuration all in one UI.
+
+The end-goal is to be a one-stop shop for auditing and recreating computational experiments
+<img width="1222" alt="Screenshot 2023-12-18 at 1 00 27 PM" src="https://github.com/tamjidrahman/lammplighter/assets/134972426/d40064a5-60fe-4f5e-a638-81547e9551a6">
+
 # Installation
 
 Recommended development within a docker container. Local installations will require a local lammps installation.
